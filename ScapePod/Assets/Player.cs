@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class Player : MonoBehaviour
 {
@@ -8,6 +9,13 @@ public class Player : MonoBehaviour
     public float walk;
     public float jump;
     public bool onGround;
+
+    public Animator _anim;
+
+    public float angle;
+
+    public float speed;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -17,44 +25,47 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(_rig.velocity.magnitude);
-   
-        if (Input.GetKey(KeyCode.LeftArrow) )
-        {
-          _rig.AddForce(-transform.right * 5);
-        }
+         // Debug.Log(_rig.velocity);
 
+        float input = Input.GetAxis("Horizontal"); 
+        speed= input * walk;
         
-        if (Input.GetKey(KeyCode.RightArrow))
+        if (input < -0.1f)
         {
-            _rig.AddForce(transform.right * 5);   
+            GetComponent<SpriteRenderer>().flipX = true;
+         
         }
-
-        if (_rig.velocity.magnitude > 3f)
+        else if (input > 0.1f)
         {
-            _rig.velocity = Vector3.ClampMagnitude(_rig.velocity, 3f);
+            GetComponent<SpriteRenderer>().flipX = false;
         }
 
-
-
-
-
-
-        if (Input.GetKeyDown(KeyCode.Space) && onGround) {
-           
-            _rig.AddForce(transform.up * jump);
+        if (Mathf.Abs(speed) > 0.0001f)
+        {
+            _anim.SetBool("walk", true);
         }
-    }
-
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("ground")) {
-            onGround = true;
+        else {
+            _anim.SetBool("walk", false);
         }
-    }
+    
+         
+        
 
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        onGround = false;
-    }
+        if (onGround)
+        {
+            _rig.velocity = new Vector3(speed, _rig.velocity.y, 0);
+        }
+        else {
+            _rig.velocity = new Vector3(speed, _rig.velocity.y, 0);
+        }
+
+    
+
+        if (Input.GetKeyDown(KeyCode.Space) && onGround)
+        {
+            _rig.AddForce(new Vector3(0, jump, 0));
+            onGround = false;
+
+        }
+    }   
 }
